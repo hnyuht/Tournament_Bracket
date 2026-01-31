@@ -3,8 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tournament Bracket Manager</title>
+    <title>TOURNAMENT SYSTEM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #FF3B30;
+            --secondary: #000000;
+            --background: #F5F5F0;
+            --surface: #FFFFFF;
+            --text: #1A1A1A;
+            --text-secondary: #666666;
+            --border: #000000;
+            --success: #00C853;
+            --warning: #FFB300;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,197 +25,334 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            font-family: 'Roboto Mono', monospace;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: var(--secondary);
+            color: var(--surface);
+            padding: 40px 20px;
+            border-bottom: 8px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 59, 48, 0.1) 10px,
+                rgba(255, 59, 48, 0.1) 20px
+            );
+            pointer-events: none;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: clamp(2rem, 5vw, 4rem);
+            letter-spacing: -2px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.7;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .subtitle {
-            font-size: 1.1em;
-            opacity: 0.9;
+            padding: 30px 20px;
         }
 
         .controls {
+            background: var(--surface);
+            border: 4px solid var(--border);
             padding: 30px;
-            background: #f8f9fa;
-            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 30px;
+            box-shadow: 12px 12px 0 rgba(0, 0, 0, 0.1);
         }
 
-        .control-section {
-            margin-bottom: 20px;
+        .control-group {
+            margin-bottom: 25px;
         }
 
-        .control-section h3 {
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
             margin-bottom: 10px;
-            color: #495057;
+            display: block;
         }
 
-        .input-group {
+        .input-row {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
-            align-items: center;
         }
 
         input[type="text"],
-        input[type="number"] {
-            padding: 12px 15px;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: all 0.3s;
+        input[type="number"],
+        select {
+            font-family: 'Roboto Mono', monospace;
+            padding: 15px;
+            border: 3px solid var(--border);
+            background: var(--surface);
+            font-size: 16px;
             flex: 1;
             min-width: 200px;
+            transition: all 0.2s;
         }
 
         input[type="text"]:focus,
-        input[type="number"]:focus {
+        input[type="number"]:focus,
+        select:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: var(--primary);
+            transform: translateY(-2px);
         }
 
         button {
-            padding: 12px 25px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            font-family: 'Roboto Mono', monospace;
+            padding: 15px 30px;
+            background: var(--border);
+            color: var(--surface);
             border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: 600;
+            font-size: 14px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            transition: left 0.3s;
+            z-index: 0;
+        }
+
+        button:hover::before {
+            left: 0;
+        }
+
+        button span {
+            position: relative;
+            z-index: 1;
         }
 
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            transform: translateY(-3px);
+            box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
         }
 
         button:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
         }
 
-        button.secondary {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        button.btn-secondary {
+            background: var(--surface);
+            color: var(--border);
+            border: 3px solid var(--border);
         }
 
-        button.secondary:hover {
-            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
+        button.btn-primary {
+            background: var(--primary);
         }
 
-        .main-content {
+        button.btn-primary::before {
+            background: var(--border);
+        }
+
+        .grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
             gap: 30px;
-            padding: 30px;
+            margin-bottom: 30px;
         }
 
-        @media (max-width: 968px) {
-            .main-content {
+        @media (max-width: 1100px) {
+            .grid {
                 grid-template-columns: 1fr;
             }
         }
 
         .panel {
-            background: white;
-            border-radius: 12px;
+            background: var(--surface);
+            border: 4px solid var(--border);
+            box-shadow: 12px 12px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .panel-header {
+            background: var(--border);
+            color: var(--surface);
             padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-bottom: 4px solid var(--primary);
         }
 
-        .panel h2 {
-            margin-bottom: 20px;
-            color: #495057;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .panel-header h2 {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
-        .round-info {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 1.2em;
-            font-weight: 600;
-        }
-
-        .standings-list {
+        .panel-body {
+            padding: 20px;
             max-height: 600px;
             overflow-y: auto;
         }
 
-        .player-card {
-            background: #f8f9fa;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
+        .tabs {
+            display: flex;
+            border-bottom: 4px solid var(--border);
+            background: var(--surface);
+        }
+
+        .tab {
+            font-family: 'Roboto Mono', monospace;
+            padding: 15px 25px;
+            background: transparent;
+            border: none;
+            border-right: 3px solid var(--border);
+            cursor: pointer;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+
+        .tab:last-child {
+            border-right: none;
+        }
+
+        .tab.active {
+            background: var(--border);
+            color: var(--surface);
+        }
+
+        .tab:hover:not(.active) {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .round-selector {
+            background: var(--surface);
+            border: 4px solid var(--border);
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 12px 12px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .round-info {
+            background: var(--primary);
+            color: var(--surface);
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 3px solid var(--border);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.3s;
-            border-left: 4px solid transparent;
         }
+
+        .player-card {
+            background: var(--surface);
+            border: 3px solid var(--border);
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .player-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: var(--text-secondary);
+        }
+
+        .player-card.rank-1::before { background: #FFD700; }
+        .player-card.rank-2::before { background: #C0C0C0; }
+        .player-card.rank-3::before { background: #CD7F32; }
 
         .player-card:hover {
-            background: #e9ecef;
-            transform: translateX(5px);
+            transform: translateX(8px);
+            box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.1);
         }
-
-        .player-card.rank-1 { border-left-color: #ffd700; background: #fffbea; }
-        .player-card.rank-2 { border-left-color: #c0c0c0; background: #f5f5f5; }
-        .player-card.rank-3 { border-left-color: #cd7f32; background: #fff4e6; }
 
         .player-info {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
         }
 
         .rank {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #6c757d;
-            min-width: 40px;
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 32px;
+            min-width: 60px;
+            color: var(--text-secondary);
         }
 
         .player-name {
-            font-weight: 600;
-            color: #212529;
+            font-weight: 700;
+            font-size: 18px;
         }
 
         .player-stats {
             display: flex;
-            gap: 20px;
-            align-items: center;
+            gap: 25px;
         }
 
         .stat {
@@ -210,191 +360,281 @@
         }
 
         .stat-label {
-            font-size: 0.8em;
-            color: #6c757d;
+            font-size: 10px;
             text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
         }
 
         .stat-value {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #495057;
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 24px;
         }
 
         .match-card {
-            background: #f8f9fa;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            border: 2px solid #dee2e6;
+            background: var(--surface);
+            border: 3px solid var(--border);
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
         }
 
-        .table-number {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 5px 12px;
-            border-radius: 6px;
-            font-weight: bold;
+        .match-card.completed {
+            opacity: 0.6;
+        }
+
+        .table-badge {
             display: inline-block;
-            margin-bottom: 10px;
+            background: var(--border);
+            color: var(--surface);
+            padding: 8px 16px;
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 14px;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
         }
 
         .match-players {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .match-player {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
-            background: white;
-            border-radius: 6px;
+            padding: 15px;
+            border: 2px solid var(--border);
+            background: var(--background);
+        }
+
+        .match-player.winner {
+            background: rgba(0, 200, 83, 0.1);
+            border-color: var(--success);
+            border-width: 3px;
         }
 
         .match-player-name {
-            font-weight: 600;
+            font-weight: 700;
             flex: 1;
         }
 
-        .match-player-record {
-            color: #6c757d;
-            margin: 0 15px;
+        .match-record {
+            margin: 0 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
         }
 
-        .win-button {
-            padding: 8px 15px;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 6px;
+        .win-btn {
+            padding: 10px 20px;
+            background: var(--success);
+            color: var(--surface);
+            border: 2px solid var(--border);
+            font-size: 12px;
+            font-weight: 700;
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
         }
 
-        .win-button:hover {
-            background: #218838;
+        .win-btn:hover:not(:disabled) {
             transform: scale(1.05);
+            box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
         }
 
-        .win-button:disabled {
-            background: #6c757d;
+        .win-btn:disabled {
+            background: var(--text-secondary);
             cursor: not-allowed;
-            transform: scale(1);
-        }
-
-        .no-matches {
-            text-align: center;
-            padding: 40px;
-            color: #6c757d;
-            font-style: italic;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.85em;
-            font-weight: 600;
-            margin-left: 10px;
-        }
-
-        .badge.active {
-            background: #28a745;
-            color: white;
-        }
-
-        .badge.complete {
-            background: #ffc107;
-            color: #000;
+            opacity: 0.5;
         }
 
         .empty-state {
             text-align: center;
             padding: 60px 20px;
-            color: #6c757d;
+            color: var(--text-secondary);
         }
 
-        .empty-state-icon {
-            font-size: 4em;
+        .empty-icon {
+            font-size: 80px;
             margin-bottom: 20px;
             opacity: 0.3;
         }
 
-        .scrollbar-custom::-webkit-scrollbar {
-            width: 8px;
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: var(--warning);
+            color: var(--secondary);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-left: 10px;
         }
 
-        .scrollbar-custom::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
+        .badge.complete {
+            background: var(--success);
+            color: var(--surface);
         }
 
-        .scrollbar-custom::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 10px;
+        .round-history-item {
+            background: var(--surface);
+            border: 3px solid var(--border);
+            padding: 20px;
+            margin-bottom: 15px;
         }
 
-        .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
-        .action-buttons {
+        .round-history-header {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border);
         }
+
+        .round-title {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 18px;
+            text-transform: uppercase;
+        }
+
+        .round-stats {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .match-result {
+            padding: 10px;
+            border-left: 4px solid var(--primary);
+            margin-bottom: 8px;
+            background: var(--background);
+            font-size: 14px;
+        }
+
+        .match-result strong {
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        /* Scrollbar styling */
+        .panel-body::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .panel-body::-webkit-scrollbar-track {
+            background: var(--background);
+            border: 2px solid var(--border);
+        }
+
+        .panel-body::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border: 2px solid var(--background);
+        }
+
+        .panel-body::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        /* Animation */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .player-card,
+        .match-card {
+            animation: slideIn 0.3s ease-out backwards;
+        }
+
+        .player-card:nth-child(1) { animation-delay: 0.05s; }
+        .player-card:nth-child(2) { animation-delay: 0.1s; }
+        .player-card:nth-child(3) { animation-delay: 0.15s; }
+        .player-card:nth-child(4) { animation-delay: 0.2s; }
+        .player-card:nth-child(5) { animation-delay: 0.25s; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🏆 Tournament Bracket Manager</h1>
-            <p class="subtitle">Swiss-Style Tournament System with Auto Table Assignment</p>
-        </header>
+    <div class="header">
+        <div class="header-content">
+            <h1>TOURNAMENT SYSTEM</h1>
+            <div class="subtitle">Swiss Pairing Engine • Table Auto-Assignment</div>
+        </div>
+    </div>
 
+    <div class="container">
         <div class="controls">
-            <div class="control-section">
-                <h3>Add Players</h3>
-                <div class="input-group">
-                    <input type="text" id="playerName" placeholder="Enter player name..." onkeypress="handleEnterKey(event)">
-                    <button onclick="addPlayer()">➕ Add Player</button>
-                    <button class="secondary" onclick="addMultiplePlayers()">➕ Add Multiple Players</button>
+            <div class="control-group">
+                <label class="control-label">Player Management</label>
+                <div class="input-row">
+                    <input type="text" id="playerName" placeholder="Enter player name...">
+                    <button onclick="addPlayer()"><span>➕ Add Player</span></button>
+                    <button class="btn-secondary" onclick="addMultiplePlayers()"><span>➕ Add Multiple</span></button>
                 </div>
             </div>
 
-            <div class="control-section">
-                <h3>Tournament Settings</h3>
-                <div class="input-group">
-                    <label>Available Tables:</label>
-                    <input type="number" id="tableCount" value="200" min="1" max="200">
-                    <button onclick="startNewRound()">🎲 Start New Round</button>
-                    <button class="secondary" onclick="resetTournament()">🔄 Reset Tournament</button>
+            <div class="control-group">
+                <label class="control-label">Tournament Control</label>
+                <div class="input-row">
+                    <input type="number" id="tableCount" value="200" min="1" max="200" placeholder="Available tables">
+                    <button class="btn-primary" onclick="startNewRound()"><span>🎲 Start New Round</span></button>
+                    <button class="btn-secondary" onclick="resetTournament()"><span>🔄 Reset All</span></button>
                 </div>
             </div>
         </div>
 
-        <div class="main-content">
+        <div class="round-selector" id="roundSelector" style="display: none;">
+            <label class="control-label">View Round</label>
+            <select id="roundSelect" onchange="changeRound()">
+                <option value="current">Current Round</option>
+            </select>
+        </div>
+
+        <div class="grid">
             <div class="panel">
-                <h2>📊 Current Standings</h2>
-                <div id="standings" class="standings-list scrollbar-custom">
+                <div class="panel-header">
+                    <h2>📊 Standings</h2>
+                </div>
+                <div class="panel-body" id="standings">
                     <div class="empty-state">
-                        <div class="empty-state-icon">👥</div>
-                        <p>No players added yet. Add players to get started!</p>
+                        <div class="empty-icon">👥</div>
+                        <p>NO PLAYERS REGISTERED</p>
+                        <p style="font-size: 12px; margin-top: 10px;">Add players to begin tournament</p>
                     </div>
                 </div>
             </div>
 
             <div class="panel">
-                <h2>🎯 Active Matches</h2>
-                <div id="roundInfo"></div>
-                <div id="matches" class="scrollbar-custom">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🎮</div>
-                        <p>Start a new round to generate matches!</p>
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('matches')">ACTIVE MATCHES</button>
+                    <button class="tab" onclick="switchTab('history')">MATCH HISTORY</button>
+                </div>
+                
+                <div id="matchesTab" class="tab-content active">
+                    <div class="panel-body" id="matches">
+                        <div class="empty-state">
+                            <div class="empty-icon">🎮</div>
+                            <p>NO ACTIVE ROUND</p>
+                            <p style="font-size: 12px; margin-top: 10px;">Start a round to generate pairings</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="historyTab" class="tab-content">
+                    <div class="panel-body" id="history">
+                        <div class="empty-state">
+                            <div class="empty-icon">📜</div>
+                            <p>NO HISTORY YET</p>
+                            <p style="font-size: 12px; margin-top: 10px;">Complete matches to see history</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -403,13 +643,20 @@
 
     <script>
         let players = [];
-        let matches = [];
-        let currentRound = 0;
-        let matchHistory = [];
+        let allRounds = []; // Store all rounds
+        let currentRoundIndex = -1; // -1 means no rounds yet
 
-        function handleEnterKey(event) {
-            if (event.key === 'Enter') {
-                addPlayer();
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'matches') {
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.getElementById('matchesTab').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('historyTab').classList.add('active');
+                updateHistory();
             }
         }
 
@@ -418,12 +665,12 @@
             const name = input.value.trim();
             
             if (!name) {
-                alert('Please enter a player name!');
+                alert('ENTER PLAYER NAME');
                 return;
             }
 
             if (players.some(p => p.name.toLowerCase() === name.toLowerCase())) {
-                alert('Player already exists!');
+                alert('PLAYER ALREADY EXISTS');
                 return;
             }
 
@@ -432,47 +679,59 @@
                 name: name,
                 wins: 0,
                 losses: 0,
-                matches: []
+                opponentIds: []
             });
 
             input.value = '';
             updateStandings();
+            saveData();
         }
 
         function addMultiplePlayers() {
-            const count = prompt('How many players do you want to add?', '8');
+            const count = prompt('NUMBER OF PLAYERS TO ADD:', '8');
             if (!count || isNaN(count) || count < 1) return;
 
             for (let i = 1; i <= parseInt(count); i++) {
-                const name = `Player ${players.length + 1}`;
                 players.push({
                     id: Date.now() + i,
-                    name: name,
+                    name: `PLAYER ${players.length + 1}`,
                     wins: 0,
                     losses: 0,
-                    matches: []
+                    opponentIds: []
                 });
             }
 
             updateStandings();
+            saveData();
         }
 
         function startNewRound() {
             if (players.length < 2) {
-                alert('You need at least 2 players to start a round!');
+                alert('NEED AT LEAST 2 PLAYERS');
                 return;
+            }
+
+            // Check if current round is complete
+            if (currentRoundIndex >= 0) {
+                const currentRound = allRounds[currentRoundIndex];
+                const incomplete = currentRound.matches.filter(m => !m.complete).length;
+                if (incomplete > 0) {
+                    if (!confirm(`${incomplete} matches incomplete. Start new round anyway?`)) {
+                        return;
+                    }
+                }
             }
 
             const tableCount = parseInt(document.getElementById('tableCount').value);
             
-            // Sort players by wins (Swiss pairing)
+            // Sort players by record for Swiss pairing
             const sortedPlayers = [...players].sort((a, b) => {
                 if (b.wins !== a.wins) return b.wins - a.wins;
                 return a.losses - b.losses;
             });
 
             // Create pairings
-            matches = [];
+            const matches = [];
             let tableNumber = 1;
             const paired = new Set();
 
@@ -480,20 +739,19 @@
                 if (paired.has(sortedPlayers[i].id)) continue;
                 if (tableNumber > tableCount) break;
 
-                // Find best opponent
+                // Find opponent who hasn't played this player yet
                 let opponent = null;
                 for (let j = i + 1; j < sortedPlayers.length; j++) {
                     if (paired.has(sortedPlayers[j].id)) continue;
                     
-                    // Check if they haven't played before
-                    const hasPlayed = sortedPlayers[i].matches.includes(sortedPlayers[j].id);
+                    const hasPlayed = sortedPlayers[i].opponentIds.includes(sortedPlayers[j].id);
                     if (!hasPlayed) {
                         opponent = sortedPlayers[j];
                         break;
                     }
                 }
 
-                // If no unpaired opponent, pair with anyone
+                // If no unpaired opponent, pair with anyone available
                 if (!opponent) {
                     for (let j = i + 1; j < sortedPlayers.length; j++) {
                         if (paired.has(sortedPlayers[j].id)) continue;
@@ -506,9 +764,10 @@
                     matches.push({
                         id: Date.now() + tableNumber,
                         table: tableNumber,
-                        player1: sortedPlayers[i],
-                        player2: opponent,
-                        complete: false
+                        player1Id: sortedPlayers[i].id,
+                        player2Id: opponent.id,
+                        complete: false,
+                        winnerId: null
                     });
                     paired.add(sortedPlayers[i].id);
                     paired.add(opponent.id);
@@ -516,41 +775,78 @@
                 }
             }
 
-            currentRound++;
+            // Create new round
+            const newRound = {
+                roundNumber: allRounds.length + 1,
+                matches: matches,
+                timestamp: new Date().toISOString()
+            };
+
+            allRounds.push(newRound);
+            currentRoundIndex = allRounds.length - 1;
+
+            updateRoundSelector();
             updateMatches();
             updateStandings();
+            saveData();
+        }
+
+        function changeRound() {
+            const select = document.getElementById('roundSelect');
+            if (select.value === 'current') {
+                currentRoundIndex = allRounds.length - 1;
+            } else {
+                currentRoundIndex = parseInt(select.value);
+            }
+            updateMatches();
+        }
+
+        function updateRoundSelector() {
+            const selector = document.getElementById('roundSelector');
+            const select = document.getElementById('roundSelect');
+            
+            if (allRounds.length === 0) {
+                selector.style.display = 'none';
+                return;
+            }
+
+            selector.style.display = 'block';
+            
+            select.innerHTML = '<option value="current">Current Round</option>';
+            allRounds.forEach((round, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `Round ${round.roundNumber}`;
+                if (index === currentRoundIndex) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
         }
 
         function recordWin(matchId, winnerId) {
-            const match = matches.find(m => m.id === matchId);
+            if (currentRoundIndex < 0) return;
+            
+            const round = allRounds[currentRoundIndex];
+            const match = round.matches.find(m => m.id === matchId);
             if (!match || match.complete) return;
 
+            const loserId = winnerId === match.player1Id ? match.player2Id : match.player1Id;
+            
             const winner = players.find(p => p.id === winnerId);
-            const loser = winnerId === match.player1.id ? match.player2 : match.player1;
+            const loser = players.find(p => p.id === loserId);
 
-            // Update records
-            const winnerPlayer = players.find(p => p.id === winner.id);
-            const loserPlayer = players.find(p => p.id === loser.id);
-
-            winnerPlayer.wins++;
-            loserPlayer.losses++;
-
-            // Record that they played each other
-            winnerPlayer.matches.push(loser.id);
-            loserPlayer.matches.push(winner.id);
+            winner.wins++;
+            loser.losses++;
+            winner.opponentIds.push(loserId);
+            loser.opponentIds.push(winnerId);
 
             match.complete = true;
-            match.winner = winner;
-
-            matchHistory.push({
-                round: currentRound,
-                table: match.table,
-                winner: winner.name,
-                loser: loser.name
-            });
+            match.winnerId = winnerId;
 
             updateMatches();
             updateStandings();
+            saveData();
         }
 
         function updateStandings() {
@@ -559,25 +855,25 @@
             if (players.length === 0) {
                 standings.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-state-icon">👥</div>
-                        <p>No players added yet. Add players to get started!</p>
+                        <div class="empty-icon">👥</div>
+                        <p>NO PLAYERS REGISTERED</p>
+                        <p style="font-size: 12px; margin-top: 10px;">Add players to begin tournament</p>
                     </div>
                 `;
                 return;
             }
 
-            const sortedPlayers = [...players].sort((a, b) => {
+            const sorted = [...players].sort((a, b) => {
                 if (b.wins !== a.wins) return b.wins - a.wins;
                 if (a.losses !== b.losses) return a.losses - b.losses;
                 return a.name.localeCompare(b.name);
             });
 
-            standings.innerHTML = sortedPlayers.map((player, index) => {
+            standings.innerHTML = sorted.map((player, index) => {
                 const rank = index + 1;
                 const rankClass = rank <= 3 ? `rank-${rank}` : '';
-                const winRate = player.wins + player.losses > 0 
-                    ? Math.round((player.wins / (player.wins + player.losses)) * 100) 
-                    : 0;
+                const total = player.wins + player.losses;
+                const winRate = total > 0 ? Math.round((player.wins / total) * 100) : 0;
 
                 return `
                     <div class="player-card ${rankClass}">
@@ -591,11 +887,11 @@
                                 <div class="stat-value">${player.wins}</div>
                             </div>
                             <div class="stat">
-                                <div class="stat-label">Losses</div>
+                                <div class="stat-label">Loss</div>
                                 <div class="stat-value">${player.losses}</div>
                             </div>
                             <div class="stat">
-                                <div class="stat-label">Win %</div>
+                                <div class="stat-label">Rate</div>
                                 <div class="stat-value">${winRate}%</div>
                             </div>
                         </div>
@@ -606,83 +902,159 @@
 
         function updateMatches() {
             const matchesDiv = document.getElementById('matches');
-            const roundInfo = document.getElementById('roundInfo');
-
-            if (currentRound === 0) {
-                roundInfo.innerHTML = '';
+            
+            if (currentRoundIndex < 0 || allRounds.length === 0) {
                 matchesDiv.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-state-icon">🎮</div>
-                        <p>Start a new round to generate matches!</p>
+                        <div class="empty-icon">🎮</div>
+                        <p>NO ACTIVE ROUND</p>
+                        <p style="font-size: 12px; margin-top: 10px;">Start a round to generate pairings</p>
                     </div>
                 `;
                 return;
             }
 
-            const completedMatches = matches.filter(m => m.complete).length;
-            const totalMatches = matches.length;
+            const round = allRounds[currentRoundIndex];
+            const completed = round.matches.filter(m => m.complete).length;
+            const total = round.matches.length;
+            const isCurrentRound = currentRoundIndex === allRounds.length - 1;
 
-            roundInfo.innerHTML = `
+            let html = `
                 <div class="round-info">
-                    Round ${currentRound} - ${completedMatches}/${totalMatches} matches complete
-                    ${completedMatches === totalMatches ? '<span class="badge complete">Round Complete</span>' : '<span class="badge active">In Progress</span>'}
+                    <span>ROUND ${round.roundNumber} • ${completed}/${total} COMPLETE</span>
+                    <span class="badge ${completed === total ? 'complete' : ''}">${completed === total ? 'COMPLETE' : 'IN PROGRESS'}</span>
                 </div>
             `;
 
-            if (matches.length === 0) {
-                matchesDiv.innerHTML = '<div class="no-matches">No matches for this round</div>';
+            html += round.matches.map(match => {
+                const p1 = players.find(p => p.id === match.player1Id);
+                const p2 = players.find(p => p.id === match.player2Id);
+                
+                return `
+                    <div class="match-card ${match.complete ? 'completed' : ''}">
+                        <div class="table-badge">TABLE ${match.table}</div>
+                        <div class="match-players">
+                            <div class="match-player ${match.winnerId === p1.id ? 'winner' : ''}">
+                                <span class="match-player-name">${p1.name}</span>
+                                <span class="match-record">${p1.wins}-${p1.losses}</span>
+                                <button class="win-btn" 
+                                        onclick="recordWin(${match.id}, ${p1.id})"
+                                        ${match.complete || !isCurrentRound ? 'disabled' : ''}>
+                                    ${match.winnerId === p1.id ? '✓ WINNER' : 'RECORD WIN'}
+                                </button>
+                            </div>
+                            <div class="match-player ${match.winnerId === p2.id ? 'winner' : ''}">
+                                <span class="match-player-name">${p2.name}</span>
+                                <span class="match-record">${p2.wins}-${p2.losses}</span>
+                                <button class="win-btn" 
+                                        onclick="recordWin(${match.id}, ${p2.id})"
+                                        ${match.complete || !isCurrentRound ? 'disabled' : ''}>
+                                    ${match.winnerId === p2.id ? '✓ WINNER' : 'RECORD WIN'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            matchesDiv.innerHTML = html;
+        }
+
+        function updateHistory() {
+            const historyDiv = document.getElementById('history');
+            
+            if (allRounds.length === 0) {
+                historyDiv.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📜</div>
+                        <p>NO HISTORY YET</p>
+                        <p style="font-size: 12px; margin-top: 10px;">Complete matches to see history</p>
+                    </div>
+                `;
                 return;
             }
 
-            matchesDiv.innerHTML = matches.map(match => `
-                <div class="match-card">
-                    <div class="table-number">Table ${match.table}</div>
-                    <div class="match-players">
-                        <div class="match-player">
-                            <span class="match-player-name">${match.player1.name}</span>
-                            <span class="match-player-record">${match.player1.wins}-${match.player1.losses}</span>
-                            <button class="win-button" 
-                                    onclick="recordWin(${match.id}, ${match.player1.id})"
-                                    ${match.complete ? 'disabled' : ''}>
-                                ${match.complete && match.winner.id === match.player1.id ? '✓ Winner' : 'Record Win'}
-                            </button>
+            let html = '';
+            
+            // Show rounds in reverse order (newest first)
+            [...allRounds].reverse().forEach(round => {
+                const completedMatches = round.matches.filter(m => m.complete);
+                
+                html += `
+                    <div class="round-history-item">
+                        <div class="round-history-header">
+                            <div class="round-title">Round ${round.roundNumber}</div>
+                            <div class="round-stats">${completedMatches.length}/${round.matches.length} matches</div>
                         </div>
-                        <div class="match-player">
-                            <span class="match-player-name">${match.player2.name}</span>
-                            <span class="match-player-record">${match.player2.wins}-${match.player2.losses}</span>
-                            <button class="win-button" 
-                                    onclick="recordWin(${match.id}, ${match.player2.id})"
-                                    ${match.complete ? 'disabled' : ''}>
-                                ${match.complete && match.winner.id === match.player2.id ? '✓ Winner' : 'Record Win'}
-                            </button>
+                `;
+
+                completedMatches.forEach(match => {
+                    const winner = players.find(p => p.id === match.winnerId);
+                    const loser = players.find(p => p.id === (match.winnerId === match.player1Id ? match.player2Id : match.player1Id));
+                    
+                    html += `
+                        <div class="match-result">
+                            Table ${match.table}: <strong>${winner.name}</strong> defeated ${loser.name}
                         </div>
-                    </div>
-                </div>
-            `).join('');
+                    `;
+                });
+
+                html += `</div>`;
+            });
+
+            historyDiv.innerHTML = html;
         }
 
         function resetTournament() {
-            if (!confirm('Are you sure you want to reset the tournament? This will clear all match history but keep the players.')) {
+            if (!confirm('RESET TOURNAMENT? This will keep players but clear all rounds and records.')) {
                 return;
             }
 
             players.forEach(player => {
                 player.wins = 0;
                 player.losses = 0;
-                player.matches = [];
+                player.opponentIds = [];
             });
 
-            matches = [];
-            currentRound = 0;
-            matchHistory = [];
+            allRounds = [];
+            currentRoundIndex = -1;
 
+            updateRoundSelector();
             updateStandings();
             updateMatches();
+            updateHistory();
+            saveData();
+        }
+
+        function saveData() {
+            localStorage.setItem('tournamentData', JSON.stringify({
+                players: players,
+                allRounds: allRounds,
+                currentRoundIndex: currentRoundIndex
+            }));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('tournamentData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                players = data.players || [];
+                allRounds = data.allRounds || [];
+                currentRoundIndex = data.currentRoundIndex ?? -1;
+                
+                updateRoundSelector();
+                updateStandings();
+                updateMatches();
+            }
         }
 
         // Initialize
-        updateStandings();
-        updateMatches();
+        loadData();
+        
+        // Enter key support
+        document.getElementById('playerName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addPlayer();
+        });
     </script>
 </body>
 </html>
