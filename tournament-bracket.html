@@ -299,6 +299,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .player-card {
@@ -326,6 +328,7 @@
         .player-card.rank-1::before { background: #FFD700; }
         .player-card.rank-2::before { background: #C0C0C0; }
         .player-card.rank-3::before { background: #CD7F32; }
+        .player-card.eliminated::before { background: #FF3B30; }
 
         .player-card:hover {
             transform: translateX(8px);
@@ -384,6 +387,11 @@
             opacity: 0.6;
         }
 
+        .match-card.bye {
+            background: rgba(255, 187, 0, 0.1);
+            border-color: var(--warning);
+        }
+
         .table-badge {
             display: inline-block;
             background: var(--border);
@@ -393,6 +401,11 @@
             font-size: 14px;
             margin-bottom: 15px;
             letter-spacing: 1px;
+        }
+
+        .bye-badge {
+            background: var(--warning);
+            color: var(--secondary);
         }
 
         .match-players {
@@ -479,6 +492,11 @@
             color: var(--surface);
         }
 
+        .badge.finals {
+            background: #FFD700;
+            color: var(--secondary);
+        }
+
         .round-history-item {
             background: var(--surface);
             border: 3px solid var(--border);
@@ -519,7 +537,15 @@
             color: var(--success);
         }
 
-        /* Scrollbar styling */
+        .bye-notice {
+            padding: 15px;
+            background: rgba(255, 187, 0, 0.2);
+            border: 3px solid var(--warning);
+            margin-bottom: 20px;
+            font-weight: 700;
+            text-align: center;
+        }
+
         .panel-body::-webkit-scrollbar {
             width: 12px;
         }
@@ -538,7 +564,6 @@
             background: var(--primary);
         }
 
-        /* Animation */
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -566,7 +591,7 @@
     <div class="header">
         <div class="header-content">
             <h1>TOURNAMENT SYSTEM</h1>
-            <div class="subtitle">Swiss Pairing Engine • Table Auto-Assignment</div>
+            <div class="subtitle">Elimination Tournament • Table Auto-Assignment</div>
         </div>
     </div>
 
@@ -578,6 +603,23 @@
                     <input type="text" id="playerName" placeholder="Enter player name...">
                     <button onclick="addPlayer()"><span>➕ Add Player</span></button>
                     <button class="btn-secondary" onclick="addMultiplePlayers()"><span>➕ Add Multiple</span></button>
+                </div>
+            </div>
+
+            <div class="control-group" id="playerCountSection" style="display: none;">
+                <div class="round-info" style="margin-bottom: 0;">
+                    <span id="playerCount">0 PLAYERS REGISTERED</span>
+                    <span id="roundCount"></span>
+                </div>
+            </div>
+
+            <div class="control-group" id="tournamentTypeSection" style="display: none;">
+                <label class="control-label">Tournament Type</label>
+                <div class="input-row">
+                    <select id="eliminationType" style="flex: 2;">
+                        <option value="single">Single Elimination</option>
+                        <option value="double">Double Elimination</option>
+                    </select>
                 </div>
             </div>
 
@@ -643,8 +685,9 @@
 
     <script>
         let players = [];
-        let allRounds = []; // Store all rounds
-        let currentRoundIndex = -1; // -1 means no rounds yet
+        let allRounds = [];
+        let currentRoundIndex = -1;
+        let eliminationType = 'single';
 
         function switchTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -658,6 +701,40 @@
                 document.getElementById('historyTab').classList.add('active');
                 updateHistory();
             }
+        }
+
+        function updatePlayerCount() {
+            const activePlayers = players.filter(p => !p.eliminated).length;
+            const countSection = document.getElementById('playerCountSection');
+            const typeSection = document.getElementById('tournamentTypeSection');
+            
+            if (activePlayers > 0) {
+                countSection.style.display = 'block';
+                typeSection.style.display = 'block';
+                
+                const countEl = document.getElementById('playerCount');
+                const roundCountEl = document.getElementById('roundCount');
+                
+                countEl.textContent = `${activePlayers} PLAYERS REGISTERED`;
+                
+                const roundsNeeded = calculateRoundsNeeded(activePlayers);
+                roundCountEl.textContent = `${roundsNeeded} ROUNDS TO TOP 8`;
+            } else {
+                countSection.style.display = 'none';
+                typeSection.style.display = 'none';
+            }
+        }
+
+        function calculateRoundsNeeded(playerCount) {
+            let remaining = playerCount;
+            let rounds = 0;
+            
+            while (remaining > 8) {
+                remaining = Math.ceil(remaining / 2);
+                rounds++;
+            }
+            
+            return rounds;
         }
 
         function addPlayer() {
@@ -679,10 +756,12 @@
                 name: name,
                 wins: 0,
                 losses: 0,
-                opponentIds: []
+                opponentIds: [],
+                eliminated: false
             });
 
             input.value = '';
+            updatePlayerCount();
             updateStandings();
             saveData();
         }
@@ -697,24 +776,33 @@
                     name: `PLAYER ${players.length + 1}`,
                     wins: 0,
                     losses: 0,
-                    opponentIds: []
+                    opponentIds: [],
+                    eliminated: false
                 });
             }
 
+            updatePlayerCount();
             updateStandings();
             saveData();
         }
 
         function startNewRound() {
-            if (players.length < 2) {
-                alert('NEED AT LEAST 2 PLAYERS');
+            const activePlayers = players.filter(p => !p.eliminated);
+            
+            if (activePlayers.length < 2) {
+                alert('NEED AT LEAST 2 ACTIVE PLAYERS');
                 return;
             }
 
-            // Check if current round is complete
+            if (activePlayers.length <= 8 && allRounds.length > 0) {
+                if (!confirm('You have reached TOP 8! Start finals round?')) {
+                    return;
+                }
+            }
+
             if (currentRoundIndex >= 0) {
                 const currentRound = allRounds[currentRoundIndex];
-                const incomplete = currentRound.matches.filter(m => !m.complete).length;
+                const incomplete = currentRound.matches.filter(m => !m.complete && !m.isBye).length;
                 if (incomplete > 0) {
                     if (!confirm(`${incomplete} matches incomplete. Start new round anyway?`)) {
                         return;
@@ -722,24 +810,52 @@
                 }
             }
 
+            eliminationType = document.getElementById('eliminationType').value;
             const tableCount = parseInt(document.getElementById('tableCount').value);
             
-            // Sort players by record for Swiss pairing
-            const sortedPlayers = [...players].sort((a, b) => {
+            const sortedPlayers = [...activePlayers].sort((a, b) => {
                 if (b.wins !== a.wins) return b.wins - a.wins;
                 return a.losses - b.losses;
             });
 
-            // Create pairings
             const matches = [];
             let tableNumber = 1;
             const paired = new Set();
+            let byePlayer = null;
+
+            if (sortedPlayers.length % 2 === 1) {
+                for (let i = sortedPlayers.length - 1; i >= 0; i--) {
+                    const player = sortedPlayers[i];
+                    const hadBye = allRounds.some(r => 
+                        r.matches.some(m => m.isBye && (m.player1Id === player.id))
+                    );
+                    if (!hadBye) {
+                        byePlayer = player;
+                        break;
+                    }
+                }
+                if (!byePlayer) {
+                    byePlayer = sortedPlayers[sortedPlayers.length - 1];
+                }
+            }
+
+            if (byePlayer) {
+                matches.push({
+                    id: Date.now(),
+                    table: 0,
+                    player1Id: byePlayer.id,
+                    player2Id: null,
+                    complete: true,
+                    winnerId: byePlayer.id,
+                    isBye: true
+                });
+                paired.add(byePlayer.id);
+            }
 
             for (let i = 0; i < sortedPlayers.length; i++) {
                 if (paired.has(sortedPlayers[i].id)) continue;
                 if (tableNumber > tableCount) break;
 
-                // Find opponent who hasn't played this player yet
                 let opponent = null;
                 for (let j = i + 1; j < sortedPlayers.length; j++) {
                     if (paired.has(sortedPlayers[j].id)) continue;
@@ -751,7 +867,6 @@
                     }
                 }
 
-                // If no unpaired opponent, pair with anyone available
                 if (!opponent) {
                     for (let j = i + 1; j < sortedPlayers.length; j++) {
                         if (paired.has(sortedPlayers[j].id)) continue;
@@ -767,7 +882,8 @@
                         player1Id: sortedPlayers[i].id,
                         player2Id: opponent.id,
                         complete: false,
-                        winnerId: null
+                        winnerId: null,
+                        isBye: false
                     });
                     paired.add(sortedPlayers[i].id);
                     paired.add(opponent.id);
@@ -775,11 +891,14 @@
                 }
             }
 
-            // Create new round
+            const isFinals = activePlayers.length <= 8;
+
             const newRound = {
                 roundNumber: allRounds.length + 1,
                 matches: matches,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                eliminationType: eliminationType,
+                isFinals: isFinals
             };
 
             allRounds.push(newRound);
@@ -816,7 +935,7 @@
             allRounds.forEach((round, index) => {
                 const option = document.createElement('option');
                 option.value = index;
-                option.textContent = `Round ${round.roundNumber}`;
+                option.textContent = `Round ${round.roundNumber}${round.isFinals ? ' (FINALS)' : ''}`;
                 if (index === currentRoundIndex) {
                     option.selected = true;
                 }
@@ -829,7 +948,7 @@
             
             const round = allRounds[currentRoundIndex];
             const match = round.matches.find(m => m.id === matchId);
-            if (!match || match.complete) return;
+            if (!match || match.complete || match.isBye) return;
 
             const loserId = winnerId === match.player1Id ? match.player2Id : match.player1Id;
             
@@ -841,9 +960,18 @@
             winner.opponentIds.push(loserId);
             loser.opponentIds.push(winnerId);
 
+            if (round.eliminationType === 'single') {
+                loser.eliminated = true;
+            } else if (round.eliminationType === 'double') {
+                if (loser.losses >= 2) {
+                    loser.eliminated = true;
+                }
+            }
+
             match.complete = true;
             match.winnerId = winnerId;
 
+            updatePlayerCount();
             updateMatches();
             updateStandings();
             saveData();
@@ -864,6 +992,7 @@
             }
 
             const sorted = [...players].sort((a, b) => {
+                if (a.eliminated !== b.eliminated) return a.eliminated ? 1 : -1;
                 if (b.wins !== a.wins) return b.wins - a.wins;
                 if (a.losses !== b.losses) return a.losses - b.losses;
                 return a.name.localeCompare(b.name);
@@ -872,14 +1001,15 @@
             standings.innerHTML = sorted.map((player, index) => {
                 const rank = index + 1;
                 const rankClass = rank <= 3 ? `rank-${rank}` : '';
+                const eliminatedClass = player.eliminated ? 'eliminated' : '';
                 const total = player.wins + player.losses;
                 const winRate = total > 0 ? Math.round((player.wins / total) * 100) : 0;
 
                 return `
-                    <div class="player-card ${rankClass}">
+                    <div class="player-card ${rankClass} ${eliminatedClass}">
                         <div class="player-info">
                             <div class="rank">#${rank}</div>
-                            <div class="player-name">${player.name}</div>
+                            <div class="player-name">${player.name}${player.eliminated ? ' ❌' : ''}</div>
                         </div>
                         <div class="player-stats">
                             <div class="stat">
@@ -918,15 +1048,26 @@
             const completed = round.matches.filter(m => m.complete).length;
             const total = round.matches.length;
             const isCurrentRound = currentRoundIndex === allRounds.length - 1;
+            const hasBye = round.matches.some(m => m.isBye);
 
             let html = `
                 <div class="round-info">
-                    <span>ROUND ${round.roundNumber} • ${completed}/${total} COMPLETE</span>
-                    <span class="badge ${completed === total ? 'complete' : ''}">${completed === total ? 'COMPLETE' : 'IN PROGRESS'}</span>
+                    <span>ROUND ${round.roundNumber} • ${round.eliminationType.toUpperCase()} ELIM • ${completed}/${total} COMPLETE</span>
+                    <span class="badge ${completed === total ? 'complete' : ''} ${round.isFinals ? 'finals' : ''}">${round.isFinals ? 'FINALS' : (completed === total ? 'COMPLETE' : 'IN PROGRESS')}</span>
                 </div>
             `;
 
-            html += round.matches.map(match => {
+            if (hasBye) {
+                const byeMatch = round.matches.find(m => m.isBye);
+                const byePlayer = players.find(p => p.id === byeMatch.player1Id);
+                html += `
+                    <div class="bye-notice">
+                        ⚠️ ${byePlayer.name} receives a BYE (odd number of players) - automatically advances!
+                    </div>
+                `;
+            }
+
+            html += round.matches.filter(m => !m.isBye).map(match => {
                 const p1 = players.find(p => p.id === match.player1Id);
                 const p2 = players.find(p => p.id === match.player2Id);
                 
@@ -976,27 +1117,35 @@
 
             let html = '';
             
-            // Show rounds in reverse order (newest first)
             [...allRounds].reverse().forEach(round => {
                 const completedMatches = round.matches.filter(m => m.complete);
                 
                 html += `
                     <div class="round-history-item">
                         <div class="round-history-header">
-                            <div class="round-title">Round ${round.roundNumber}</div>
-                            <div class="round-stats">${completedMatches.length}/${round.matches.length} matches</div>
+                            <div class="round-title">Round ${round.roundNumber}${round.isFinals ? ' (FINALS)' : ''}</div>
+                            <div class="round-stats">${completedMatches.length}/${round.matches.length} matches • ${round.eliminationType.toUpperCase()} ELIM</div>
                         </div>
                 `;
 
                 completedMatches.forEach(match => {
-                    const winner = players.find(p => p.id === match.winnerId);
-                    const loser = players.find(p => p.id === (match.winnerId === match.player1Id ? match.player2Id : match.player1Id));
-                    
-                    html += `
-                        <div class="match-result">
-                            Table ${match.table}: <strong>${winner.name}</strong> defeated ${loser.name}
-                        </div>
-                    `;
+                    if (match.isBye) {
+                        const player = players.find(p => p.id === match.player1Id);
+                        html += `
+                            <div class="match-result" style="border-left-color: var(--warning);">
+                                BYE: <strong>${player.name}</strong> advances automatically
+                            </div>
+                        `;
+                    } else {
+                        const winner = players.find(p => p.id === match.winnerId);
+                        const loser = players.find(p => p.id === (match.winnerId === match.player1Id ? match.player2Id : match.player1Id));
+                        
+                        html += `
+                            <div class="match-result">
+                                Table ${match.table}: <strong>${winner.name}</strong> defeated ${loser.name}
+                            </div>
+                        `;
+                    }
                 });
 
                 html += `</div>`;
@@ -1014,12 +1163,14 @@
                 player.wins = 0;
                 player.losses = 0;
                 player.opponentIds = [];
+                player.eliminated = false;
             });
 
             allRounds = [];
             currentRoundIndex = -1;
 
             updateRoundSelector();
+            updatePlayerCount();
             updateStandings();
             updateMatches();
             updateHistory();
@@ -1043,15 +1194,14 @@
                 currentRoundIndex = data.currentRoundIndex ?? -1;
                 
                 updateRoundSelector();
+                updatePlayerCount();
                 updateStandings();
                 updateMatches();
             }
         }
 
-        // Initialize
         loadData();
         
-        // Enter key support
         document.getElementById('playerName').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') addPlayer();
         });
