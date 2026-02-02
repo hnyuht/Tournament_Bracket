@@ -16,6 +16,7 @@
             --border: #000000;
             --success: #00C853;
             --warning: #FFB300;
+            --danger: #D32F2F;
         }
 
         * {
@@ -196,6 +197,15 @@
         }
 
         button.btn-primary::before {
+            background: var(--border);
+        }
+
+        button.btn-danger {
+            background: var(--danger);
+            color: var(--surface);
+        }
+
+        button.btn-danger::before {
             background: var(--border);
         }
 
@@ -628,7 +638,8 @@
                 <div class="input-row">
                     <input type="number" id="tableCount" value="200" min="1" max="200" placeholder="Available tables">
                     <button class="btn-primary" onclick="startNewRound()"><span>🎲 Start New Round</span></button>
-                    <button class="btn-secondary" onclick="resetTournament()"><span>🔄 Reset All</span></button>
+                    <button class="btn-secondary" onclick="resetTournament()"><span>🔄 Reset Tournament</span></button>
+                    <button class="btn-danger" onclick="fullReset()"><span>🗑️ Full Reset</span></button>
                 </div>
             </div>
         </div>
@@ -1175,6 +1186,29 @@
             updateMatches();
             updateHistory();
             saveData();
+        }
+
+        function fullReset() {
+            if (!confirm('⚠️ FULL RESET WARNING ⚠️\n\nThis will DELETE EVERYTHING:\n• All players\n• All rounds\n• All match history\n• All saved data\n\nAre you absolutely sure?')) {
+                return;
+            }
+
+            // Clear everything
+            players = [];
+            allRounds = [];
+            currentRoundIndex = -1;
+
+            // Clear localStorage
+            localStorage.removeItem('tournamentData');
+
+            // Update all displays
+            updateRoundSelector();
+            updatePlayerCount();
+            updateStandings();
+            updateMatches();
+            updateHistory();
+
+            alert('✓ FULL RESET COMPLETE\n\nAll data has been cleared. You can start fresh!');
         }
 
         function saveData() {
